@@ -1,11 +1,6 @@
 pipeline {
     agent any
 
-    // environment {
-    //     SONARQUBE_SERVER = 'your-sonarqube-server' // Replace with your SonarQube server name
-    //     SONARQUBE_CREDENTIALS = 'your-sonarqube-credentials-id' // Replace with your SonarQube credentials ID
-    // }
-
     stages {
         stage('Checkout') {
             steps {
@@ -24,7 +19,7 @@ pipeline {
         stage('SonarQube Analysis') {
             steps {
                 // Run SonarQube analysis
-                withSonarQubeEnv(sonarqube) {
+                withSonarQubeEnv('sonarqube') {
                     sh 'sonar-scanner -Dsonar.projectKey=DevOps -Dsonar.sources=. -Dsonar.host.url=http://localhost:9000/ -Dsonar.login=sonarqube-token'
                 }
             }
