@@ -11,8 +11,8 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                // Checkout code from GitHub repository
-                git 'https://github.com/Amaan00101/sonar.git'
+                // Checkout code from GitHub repository and specify the branch
+                git credentialsId: 'git_credentials', branch: 'main', url: 'https://github.com/Amaan00101/sonar.git'
             }
         }
 
