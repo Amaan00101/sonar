@@ -1,41 +1,31 @@
 pipeline {
-  agent any
-  options {
-    buildDiscarder(logRotator(numToKeepStr: '5'))
-  }
-  stages {
-    stage('Build') {
-      steps {
-        withSonarQubeEnv(installationName: 'sonarqube'){
-          sh './mvnw clean install site surefire-report:report'
-          sh 'tree'
-        }
-      }
-    }
-  }
-}
-
-pipeline {
     agent any
+
+    // environment {
+    //     SONARQUBE_SERVER = 'your-sonarqube-server' // Replace with your SonarQube server name
+    //     SONARQUBE_CREDENTIALS = 'your-sonarqube-credentials-id' // Replace with your SonarQube credentials ID
+    // }
 
     stages {
         stage('Checkout') {
             steps {
+                // Checkout the code from your Git repository
                 git url: 'https://github.com/Amaan00101/sonar.git', credentialsId: 'git_credentials'
             }
         }
 
-        stage('Build') {
+        stage('Install Dependencies') {
             steps {
-                // Use Maven directly
-                sh 'mvn clean install site surefire-report:report'
+                // Install Python dependencies
+                sh 'pip install -r requirements.txt'
             }
         }
 
         stage('SonarQube Analysis') {
             steps {
-                withSonarQubeEnv('sonarqube') {
-                    sh 'mvn sonar:sonar -Dsonar.projectKey=DevOps -Dsonar.host.url=http://localhost:9000/ -Dsonar.login=sonarqube-token'
+                // Run SonarQube analysis
+                withSonarQubeEnv(sonarqube) {
+                    sh 'sonar-scanner -Dsonar.projectKey=DevOps -Dsonar.sources=. -Dsonar.host.url=http://localhost:9000/ -Dsonar.login=sonarqube-token'
                 }
             }
         }
@@ -43,6 +33,7 @@ pipeline {
 
     post {
         always {
+            // Clean up workspace or perform other actions
             cleanWs()
         }
     }
