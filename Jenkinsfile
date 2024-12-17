@@ -2,24 +2,48 @@ pipeline {
     agent any
 
     environment {
-        SONARQUBE_URL = 'http://localhost:9000'  // Replace with your SonarQube server URL
-        SONARQUBE_TOKEN = credentials('sonarqube-token')  // Replace 'sonar-token' with your Jenkins credentials ID for the SonarQube token
+        // Define SonarQube credentials and URL here
+        SONAR_HOST_URL = 'http://localhost:9000'
+        SONAR_PROJECT_KEY = 'DevOps'
+        SONAR_TOKEN = credentials('sonarqube-token') // Store your SonarQube token in Jenkins credentials
     }
 
     stages {
-        stage('Test SonarQube Connection') {
+        stage('Checkout') {
             steps {
+                // Checkout code from GitHub repository
+                git 'https://github.com/Amaan00101/sonar.git'
+            }
+        }
+
+        stage('Build and Test') {
+            steps {
+                // Run Maven clean, verify, and SonarQube scan
                 script {
-                    // Run SonarQube Scanner to test connection
-                    withSonarQubeEnv('sonarqube') {  // 'SonarQube' should match the name in Jenkins' SonarQube configuration
-                        sh '''
-                            sonar-scanner \
-                              -Dsonar.host.url=$SONARQUBE_URL \
-                              -Dsonar.login=$SONARQUBE_TOKEN
-                        '''
-                    }
+                    sh '''
+                    mvn clean verify sonar:sonar \
+                        -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
+                        -Dsonar.host.url=${SONAR_HOST_URL} \
+                        -Dsonar.login=${SONAR_TOKEN}
+                    '''
                 }
             }
+        }
+
+        stage('Post-build Actions') {
+            steps {
+                script {
+                    // Optional: Trigger additional actions like sending notifications
+                    echo "SonarQube scan complete. Check SonarQube dashboard for results."
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            // Cleanup or notification actions after the pipeline run
+            echo "Pipeline completed"
         }
     }
 }
