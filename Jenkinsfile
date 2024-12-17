@@ -1,22 +1,23 @@
 pipeline {
     agent any
-    tools {
-        maven 'maven'
+
+    environment {
+        SONARQUBE_URL = 'http://localhost:9000'  // Replace with your SonarQube server URL
+        SONARQUBE_TOKEN = credentials('sonarqube-token')  // Replace 'sonar-token' with your Jenkins credentials ID for the SonarQube token
     }
 
     stages {
-        stage('Git Checkout') {
+        stage('Test SonarQube Connection') {
             steps {
-                checkout scmGit(branches: [[name: '*/main']], extensions: [], userRemoteConfigs: [[url: 'https://github.com/Amaan00101/sonar.git']])
-                echo 'Git Checkout Completed'
-            }
-        }
-
-        stage('SonarQube Analysis') {
-            steps {
-                withSonarQubeEnv('sonarqube') {
-                    bat '''mvn clean verify sonar:sonar -Dsonar.projectKey=DevOps-Dsonar.projectName='DevOps' -Dsonar.host.url=http://localhost:9000''' //port 9000 is default for sonar
-                    echo 'SonarQube Analysis Completed'
+                script {
+                    // Run SonarQube Scanner to test connection
+                    withSonarQubeEnv('sonarqube') {  // 'SonarQube' should match the name in Jenkins' SonarQube configuration
+                        sh '''
+                            sonar-scanner \
+                              -Dsonar.host.url=$SONARQUBE_URL \
+                              -Dsonar.login=$SONARQUBE_TOKEN
+                        '''
+                    }
                 }
             }
         }
