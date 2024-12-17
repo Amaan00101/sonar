@@ -1,35 +1,24 @@
 pipeline {
     agent any
+    tools {
+        maven 'Maven'
+    }
 
     stages {
-        stage('Checkout') {
+        stage('Git Checkout') {
             steps {
-                // Checkout the code from your Git repository
-                git url: 'https://github.com/Amaan00101/sonar.git', credentialsId: 'git_credentials'
-            }
-        }
-
-        stage('Install Dependencies') {
-            steps {
-                // Install Python dependencies
-                sh 'pip install -r requirements.txt'
+                checkout scmGit(branches: [[name: '*/main']], extensions: [], userRemoteConfigs: [[url: 'https://github.com/Amaan00101/sonar.git']])
+                echo 'Git Checkout Completed'
             }
         }
 
         stage('SonarQube Analysis') {
             steps {
-                // Run SonarQube analysis
                 withSonarQubeEnv('sonarqube') {
-                    sh 'sonar-scanner -Dsonar.projectKey=DevOps -Dsonar.sources=. -Dsonar.host.url=http://localhost:9000/ -Dsonar.login=sonarqube-token'
+                    bat '''mvn clean verify sonar:sonar -Dsonar.projectKey=DevOps-Dsonar.projectName='DevOps' -Dsonar.host.url=http://localhost:9000''' //port 9000 is default for sonar
+                    echo 'SonarQube Analysis Completed'
                 }
             }
-        }
-    }
-
-    post {
-        always {
-            // Clean up workspace or perform other actions
-            cleanWs()
         }
     }
 }
