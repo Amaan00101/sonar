@@ -15,9 +15,11 @@ pipeline {
         stage('SonarQube Analysis') {
             steps {
                 withSonarQubeEnv('sonarqube') {
-                    shell '''mvn clean verify sonar:sonar -Dsonar.projectKey=DevOps -Dsonar.projectName='DevOps' -Dsonar.host.url=http://localhost:9000'''
+                    sh '''mvn clean verify sonar:sonar -Dsonar.projectKey=DevOps -Dsonar
+                    projectName='DevOps' -Dsonar.host.url=http://localhost:9000'''
                     echo 'SonarQube Analysis Completed'
                 }
+
             }
         }
     }
